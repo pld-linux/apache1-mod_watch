@@ -1,10 +1,16 @@
+# TODO
+# - strange error when accessing "/~watch-info":
+#   [Thu Feb 10 03:16:16 2005] [warn] " 1\n\b" concurrency counter went negative; resetting to zero
+
+%bcond_without	ipv6		# disable IPv6 support
+
 %define		mod_name	watch
 %define 	apxs		/usr/sbin/apxs1
 Summary:	Apache module: Monitoring Interface for MRTG
 Summary(pl):	Modu³ do apache: Interfejs do monitorowania za pomoc± MRTG
 Name:		apache1-mod_%{mod_name}
 Version:	3.18
-Release:	1
+Release:	1.2
 License:	BSD
 Group:		Networking/Daemons
 Source0:	http://www.snert.com/Software/download/mod_watch%(echo %{version} | tr -d .).tgz
@@ -13,16 +19,17 @@ Source1:	%{name}.conf
 Patch0:		%{name}-PLD-v6stuff.patch
 URL:		http://www.snert.com/Software/mod_watch/
 BuildRequires:	%{apxs}
-BuildRequires:	apache1-devel
+BuildRequires:	apache1-devel >= 1.3.33-2
+%{?with_ipv6:BuildRequires:	apache1(ipv6)-devel}
 Requires(post,preun):	%{apxs}
 Requires(post,preun):	grep
 Requires(preun):	fileutils
-Requires:	apache1
+Requires:	apache1 >= 1.3.33-2
 Obsoletes:	apache-mod_%{mod_name} <= %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_pkglibdir	%(%{apxs} -q LIBEXECDIR)
-%define		_sysconfdir	%(%{apxs} -q SYSCONFDIR)
+%define		_pkglibdir	%(%{apxs} -q LIBEXECDIR 2>/dev/null)
+%define		_sysconfdir	%(%{apxs} -q SYSCONFDIR 2>/dev/null)
 
 %description
 This module will watch and collect the bytes, requests, and documents
@@ -42,7 +49,9 @@ graficzn± reprezentacje danych. Modu³ wspiera mod_vhost_alias oraz mod_gzip.
 
 %prep
 %setup -q -n mod_%{mod_name}-%{version}
-%patch -p0
+%{?with_ipv6:%patch -p0}
+
+mv mod_watch.html mod_watch_pl.html
 
 %build
 %{__make} build-dynamic \
@@ -50,23 +59,17 @@ graficzn± reprezentacje danych. Modu³ wspiera mod_vhost_alias oraz mod_gzip.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_pkglibdir},%{_sysconfdir}}
+install -d $RPM_BUILD_ROOT{%{_pkglibdir},%{_sysconfdir}/conf.d}
 
 install mod_%{mod_name}.so $RPM_BUILD_ROOT%{_pkglibdir}
-install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/mod_watch.conf
+install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/conf.d/90_mod_%{mod_name}.conf
 
-mv mod_watch.html mod_watch_pl.html
 sed -e 's/<!--#/<!--/g' index.shtml > mod_watch.html
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %post
-%{apxs} -e -a -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
-if [ -f %{_sysconfdir}/apache.conf ] && \
-	! grep -q "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf; then
-	echo "Include %{_sysconfdir}/mod_watch.conf" >> %{_sysconfdir}/apache.conf
-fi
 if [ -f /var/lock/subsys/apache ]; then
 	/etc/rc.d/init.d/apache restart 1>&2
 else
@@ -75,18 +78,29 @@ fi
 
 %preun
 if [ "$1" = "0" ]; then
-	%{apxs} -e -A -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
-	umask 027
-	grep -v "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf > \
-		%{_sysconfdir}/apache.conf.tmp
-	mv -f %{_sysconfdir}/apache.conf.tmp %{_sysconfdir}/apache.conf
 	if [ -f /var/lock/subsys/apache ]; then
 		/etc/rc.d/init.d/apache restart 1>&2
 	fi
 fi
 
+%triggerpostun -- %{name} < 3.18-1.1
+if grep -q '^Include conf\.d' /etc/apache/apache.conf; then
+	%{apxs} -e -A -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
+	sed -i -e '
+		/^Include.*mod_%{mod_name}\.conf/d
+	' /etc/apache/apache.conf
+else
+	# they're still using old apache.conf
+	sed -i -e '
+		s,^Include.*mod_%{mod_name}\.conf,Include %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf,
+	' /etc/apache/apache.conf
+fi
+if [ -f /var/lock/subsys/apache ]; then
+	/etc/rc.d/init.d/apache restart 1>&2
+fi
+
 %files
 %defattr(644,root,root,755)
 %doc CHANGES* *.html
+%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf
 %attr(755,root,root) %{_pkglibdir}/*
-%{_sysconfdir}/mod_watch.conf
