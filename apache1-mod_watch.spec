@@ -63,9 +63,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 %{apxs} -e -a -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
-if [ -f %{_sysconfdir}/apache/apache.conf ] && \
-    ! grep -q "^Include.*mod_watch.conf" %{_sysconfdir}/apache/apache.conf; then
-	echo Include %{_sysconfdir}/apache/mod_watch.conf >> %{_sysconfdir}/apache/apache.conf
+if [ -f %{_sysconfdir}/apache.conf ] && \
+    ! grep -q "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf; then
+	echo "Include %{_sysconfdir}/mod_watch.conf" >> %{_sysconfdir}/apache.conf
 fi
 if [ -f /var/lock/subsys/apache ]; then
 	/etc/rc.d/init.d/apache restart 1>&2
@@ -77,9 +77,9 @@ fi
 if [ "$1" = "0" ]; then
 	%{apxs} -e -A -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
 	umask 027
-	grep -v "^Include.*mod_watch.conf" %{_sysconfdir}/apache/apache.conf > \
-		%{_sysconfdir}/apache/apache.conf.tmp
-	mv -f %{_sysconfdir}/apache/apache.conf.tmp /etc/apache/apache.conf
+	grep -v "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf > \
+		%{_sysconfdir}/apache.conf.tmp
+	mv -f %{_sysconfdir}/apache.conf.tmp %{_sysconfdir}/apache.conf
 	if [ -f /var/lock/subsys/apache ]; then
 		/etc/rc.d/init.d/apache restart 1>&2
 	fi
