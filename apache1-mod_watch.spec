@@ -64,7 +64,7 @@ rm -rf $RPM_BUILD_ROOT
 %post
 %{apxs} -e -a -n %{mod_name} %{_pkglibdir}/mod_%{mod_name}.so 1>&2
 if [ -f %{_sysconfdir}/apache.conf ] && \
-    ! grep -q "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf; then
+	! grep -q "^Include.*mod_watch.conf" %{_sysconfdir}/apache.conf; then
 	echo "Include %{_sysconfdir}/mod_watch.conf" >> %{_sysconfdir}/apache.conf
 fi
 if [ -f /var/lock/subsys/apache ]; then
