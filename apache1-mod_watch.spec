@@ -70,7 +70,7 @@ fi
 if [ -f /var/lock/subsys/apache ]; then
 	/etc/rc.d/init.d/apache restart 1>&2
 else
-	echo "Run \"/etc/rc.d/init.d/apache start\" to start apache http daemon."
+	echo "Run \"/etc/rc.d/init.d/apache start\" to start apache HTTP daemon."
 fi
 
 %preun
