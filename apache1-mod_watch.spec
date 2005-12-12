@@ -19,8 +19,8 @@ Source1:	%{name}.conf
 Patch0:		%{name}-PLD-v6stuff.patch
 URL:		http://www.snert.com/Software/mod_watch/
 BuildRequires:	%{apxs}
-BuildRequires:	apache1-devel >= 1.3.33-2
 #{?with_ipv6:BuildRequires:	apache1(ipv6)-devel}
+BuildRequires:	apache1-devel >= 1.3.33-2
 Requires:	apache1 >= 1.3.33-2
 Obsoletes:	apache-mod_%{mod_name} <= %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -39,10 +39,11 @@ mod_vhost_alias and mod_gzip.
 
 %description -l pl
 Ten modu³ kontroluje i zbiera informacje na temat ilo¶ci przes³anych
-bajtów (przychodz±cych i wychodz±cych) wg. serwera wirtualnego, w³a¶ciciela
-plików, zdalnego adresu ip, katalogu lub lokacji oraz serwera jako ca³o¶ci.
-Modu³ zosta³ zaprojektowany do pracy z MRTG, dziêki czemu otrzymamy ³adn±,
-graficzn± reprezentacje danych. Modu³ wspiera mod_vhost_alias oraz mod_gzip.
+bajtów (przychodz±cych i wychodz±cych) wg. serwera wirtualnego,
+w³a¶ciciela plików, zdalnego adresu ip, katalogu lub lokacji oraz
+serwera jako ca³o¶ci. Modu³ zosta³ zaprojektowany do pracy z MRTG,
+dziêki czemu otrzymamy ³adn±, graficzn± reprezentacje danych. Modu³
+wspiera mod_vhost_alias oraz mod_gzip.
 
 %prep
 %setup -q -n mod_%{mod_name}-%{version}
@@ -99,5 +100,5 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc CHANGES* *.html
-%attr(640,root,root) %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf
 %attr(755,root,root) %{_pkglibdir}/*
