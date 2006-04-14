@@ -22,7 +22,7 @@ BuildRequires:	%{apxs}
 #{?with_ipv6:BuildRequires:	apache1(ipv6)-devel}
 BuildRequires:	apache1-devel >= 1.3.33-2
 Requires:	apache1 >= 1.3.33-2
-Obsoletes:	apache-mod_%{mod_name} <= %{version}
+Obsoletes:	apache-mod_%{mod_name} <= 3.18
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_pkglibdir	%(%{apxs} -q LIBEXECDIR 2>/dev/null)
