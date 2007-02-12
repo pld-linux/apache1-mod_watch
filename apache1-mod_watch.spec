@@ -7,7 +7,7 @@
 %define		mod_name	watch
 %define 	apxs		/usr/sbin/apxs1
 Summary:	Apache module: Monitoring Interface for MRTG
-Summary(pl.UTF-8):   Moduł do apache: Interfejs do monitorowania za pomocą MRTG
+Summary(pl.UTF-8):	Moduł do apache: Interfejs do monitorowania za pomocą MRTG
 Name:		apache1-mod_%{mod_name}
 Version:	3.18
 Release:	4
