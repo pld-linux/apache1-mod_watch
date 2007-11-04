@@ -18,9 +18,8 @@ Source0:	http://www.snert.com/Software/download/mod_watch%(echo %{version} | tr 
 Source1:	%{name}.conf
 Patch0:		%{name}-PLD-v6stuff.patch
 URL:		http://www.snert.com/Software/mod_watch/
-BuildRequires:	apache1-apxs
 #{?with_ipv6:BuildRequires:	apache1(ipv6)-devel}
-BuildRequires:	apache1-devel >= 1.3.33-2
+BuildRequires:	apache1-devel >= 1.3.39
 BuildRequires:	rpmbuild(macros) >= 1.268
 Requires:	apache1(EAPI)
 Obsoletes:	apache-mod_watch <= 3.18
