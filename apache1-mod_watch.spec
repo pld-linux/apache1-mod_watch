@@ -26,7 +26,7 @@ Obsoletes:	apache-mod_watch <= 3.18
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_pkglibdir	%(%{apxs} -q LIBEXECDIR 2>/dev/null)
-%define		_sysconfdir	%(%{apxs} -q SYSCONFDIR 2>/dev/null)
+%define		_sysconfdir	%(%{apxs} -q SYSCONFDIR 2>/dev/null)/conf.d
 
 %description
 This module will watch and collect the bytes, requests, and documents
@@ -51,18 +51,18 @@ wspiera mod_vhost_alias oraz mod_gzip.
 
 mv mod_watch.html mod_watch_pl.html
 
+sed -e 's/<!--#/<!--/g' index.shtml > mod_watch.html
+
 %build
 %{__make} build-dynamic \
 	APXS=%{apxs}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_pkglibdir},%{_sysconfdir}/conf.d}
+install -d $RPM_BUILD_ROOT{%{_pkglibdir},%{_sysconfdir}}
 
-install mod_%{mod_name}.so $RPM_BUILD_ROOT%{_pkglibdir}
-install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/conf.d/90_mod_%{mod_name}.conf
-
-sed -e 's/<!--#/<!--/g' index.shtml > mod_watch.html
+install -p mod_%{mod_name}.so $RPM_BUILD_ROOT%{_pkglibdir}
+cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/90_mod_%{mod_name}.conf
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -84,7 +84,7 @@ if grep -q '^Include conf\.d/\*\.conf' /etc/apache/apache.conf; then
 else
 	# they're still using old apache.conf
 	sed -i -e '
-		s,^Include.*mod_%{mod_name}\.conf,Include %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf,
+		s,^Include.*mod_%{mod_name}\.conf,Include %{_sysconfdir}/*_mod_%{mod_name}.conf,
 	' /etc/apache/apache.conf
 fi
 %service -q apache restart
@@ -92,5 +92,5 @@ fi
 %files
 %defattr(644,root,root,755)
 %doc CHANGES* *.html
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/conf.d/*_mod_%{mod_name}.conf
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/*_mod_%{mod_name}.conf
 %attr(755,root,root) %{_pkglibdir}/*
